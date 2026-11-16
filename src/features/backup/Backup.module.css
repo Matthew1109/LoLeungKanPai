@@ -1,0 +1,32 @@
+.card { margin: 16px 16px 0; padding: 18px; border-radius: 18px; background: var(--bg-2); border: 1px solid var(--hairline); }
+.title { font-family: var(--font-serif); font-weight: 500; font-size: 20px; letter-spacing: -0.01em; margin-bottom: 8px; }
+.subtitle { font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--accent-hi); font-weight: 500; margin-bottom: 8px; }
+.text { font-size: 14px; line-height: 1.55; color: var(--text-2); }
+.meta { margin-top: 10px; font-size: 13px; line-height: 1.5; color: var(--text-3); font-variant-numeric: tabular-nums; }
+.actions { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+.primary, .secondary, .danger { min-height: 48px; padding: 0 18px; border-radius: 14px; font-size: 16px; font-weight: 500; }
+.primary { color: var(--text); background: linear-gradient(160deg, var(--accent-hi), var(--accent)); }
+.secondary { color: var(--text); background: var(--bg-3); border: 1px solid var(--chip-border); }
+.danger { color: var(--danger); background: rgba(224, 113, 107, 0.16); border: 1px solid rgba(224, 113, 107, 0.45); }
+.primary:disabled, .secondary:disabled, .danger:disabled { opacity: 0.55; }
+.progress { margin-top: 16px; font-size: 14px; line-height: 1.55; color: var(--text-2); }
+.progress .text, .progress .meta { margin-top: 8px; }
+.bar { height: 6px; margin-top: 12px; border-radius: 3px; background: var(--bg-3); overflow: hidden; }
+.fill { height: 100%; border-radius: 3px; background: var(--accent-hi); transition: width 0.25s var(--ease); }
+.note { margin-top: 14px; font-size: 14px; line-height: 1.55; color: var(--text); }
+.error { margin-top: 14px; font-size: 14px; line-height: 1.55; color: var(--danger); }
+.fileInput { display: none; }
+
+.overlay {
+  position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 24px;
+  background: rgba(5, 5, 6, 0.9); overscroll-behavior: contain;
+}
+.panel { width: min(100%, 340px); padding: 24px 22px; border-radius: 22px; border: 1px solid var(--hairline); background: var(--bg-2); }
+.panelTitle { font-family: var(--font-serif); font-weight: 500; font-size: 22px; letter-spacing: -0.01em; line-height: 1.2; margin-bottom: 10px; }
+
+.banner { margin: 18px 16px 0; padding: 16px 18px; border-radius: 18px; border: 1px solid rgba(154, 45, 65, 0.45); background: var(--accent-soft); }
+.bannerTitle { font-family: var(--font-serif); font-weight: 500; font-size: 18px; margin-bottom: 6px; }
+.bannerText { font-size: 14px; line-height: 1.5; color: var(--text-2); }
+.bannerActions { display: flex; align-items: center; gap: 8px; margin-top: 14px; }
+.bannerPrimary { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 18px; border-radius: 14px; font-size: 15px; font-weight: 500; color: var(--text); background: linear-gradient(160deg, var(--accent-hi), var(--accent)); }
+.bannerGhost { min-height: 44px; padding: 0 14px; font-size: 15px; color: var(--text-2); }

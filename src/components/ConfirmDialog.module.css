@@ -1,0 +1,32 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(5, 5, 6, 0.72);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  overscroll-behavior: contain;
+  animation: fade 0.2s var(--ease) both;
+}
+.dialog {
+  width: min(100%, 340px);
+  padding: 24px 22px 18px;
+  border-radius: 22px;
+  border: 1px solid var(--hairline);
+  background: var(--bg-2);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  animation: pop 0.25s var(--ease) both;
+}
+.title { font-family: var(--font-serif); font-weight: 500; font-size: 22px; letter-spacing: -0.01em; line-height: 1.2; }
+.message { margin-top: 10px; font-size: 15px; line-height: 1.5; color: var(--text-2); }
+.actions { display: flex; flex-direction: column-reverse; gap: 8px; margin-top: 22px; }
+.cancel, .confirm { min-height: 48px; border-radius: 14px; font-size: 16px; font-weight: 500; }
+.cancel { color: var(--text-2); background: var(--bg-3); }
+.confirm { color: var(--text); background: linear-gradient(160deg, var(--accent-hi), var(--accent)); }
+.danger { background: rgba(224, 113, 107, 0.16); color: var(--danger); border: 1px solid rgba(224, 113, 107, 0.45); }
+.cancel:disabled, .confirm:disabled { opacity: 0.55; }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pop { from { opacity: 0; transform: translateY(10px) scale(0.97); } to { opacity: 1; transform: none; } }

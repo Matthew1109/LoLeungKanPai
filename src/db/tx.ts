@@ -1,0 +1,70 @@
+import type { IDBPDatabase } from 'idb';
+import { getDb } from './index';
+import { toWriteError } from './errors';
+import type { LkpDB } from './schema';
+
+/**
+ * Every journal write (entry save/delete, orphan sweep) uses one readwrite transaction over these four stores,
+ * so an entry, its photo and thumbnail, the backup bookkeeping and the draft either all change or none do.
+ */
+const WRITE_STORES = ['entries', 'photos', 'thumbs', 'meta'] as const;
+
+function openWriteTx(db: IDBPDatabase<LkpDB>) {
+  return db.transaction([...WRITE_STORES], 'readwrite');
+}
+
+export type WriteTx = ReturnType<typeof openWriteTx>;
+
+function abortQuietly(tx: { done: Promise<void>; abort(): void }): void {
+  tx.done.catch(() => undefined); // the abort below rejects `done`; that rejection is expected, not an error
+  try {
+    tx.abort();
+  } catch {
+    /* already finished */
+  }
+}
+
+/**
+ * Runs `work` inside one write transaction and resolves once it has COMMITTED.
+ * If `work` throws, the transaction is explicitly aborted: IndexedDB does not roll back by itself when our own
+ * code throws, it would commit whatever was written so far. Rule for `work`: await only IndexedDB requests
+ * (any other await lets the transaction auto-commit early).
+ * Quota errors are translated to StorageFullError.
+ */
+export async function runWriteTx<T>(work: (tx: WriteTx) => Promise<T>): Promise<T> {
+  const db = await getDb();
+  const tx = openWriteTx(db);
+  try {
+    const value = await work(tx);
+    await tx.done;
+    return value;
+  } catch (err) {
+    abortQuietly(tx);
+    throw toWriteError(err);
+  }
+}
+
+/**
+ * The restore commit's stores. `photos` and `thumbs` are in the transaction only so the commit can VERIFY the staged
+ * photos inside it (read-only use: the commit never writes to them). Same abort-on-throw rule as runWriteTx.
+ */
+const COMMIT_STORES = ['entries', 'tags', 'meta', 'photos', 'thumbs'] as const;
+
+function openCommitTx(db: IDBPDatabase<LkpDB>) {
+  return db.transaction([...COMMIT_STORES], 'readwrite');
+}
+
+export type CommitTx = ReturnType<typeof openCommitTx>;
+
+export async function runCommitTx<T>(work: (tx: CommitTx) => Promise<T>): Promise<T> {
+  const db = await getDb();
+  const tx = openCommitTx(db);
+  try {
+    const value = await work(tx);
+    await tx.done;
+    return value;
+  } catch (err) {
+    abortQuietly(tx);
+    throw toWriteError(err);
+  }
+}

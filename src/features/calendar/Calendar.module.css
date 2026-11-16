@@ -1,0 +1,40 @@
+.head { display: flex; align-items: flex-end; justify-content: space-between; padding: 22px 20px 16px; }
+.year { display: block; font-size: 11px; letter-spacing: 0.34em; color: var(--accent-hi); margin-bottom: 2px; padding-left: 2px; }
+.month { font-family: var(--font-serif); font-weight: 500; font-size: 46px; line-height: 1; letter-spacing: -0.025em; }
+.controls { display: flex; align-items: center; gap: 8px; padding-bottom: 4px; }
+.round { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; color: var(--text); background: var(--bg-2); border: 1px solid var(--hairline); transition: background 0.2s, transform 0.2s var(--ease); }
+.round:active { background: var(--bg-3); transform: scale(0.92); }
+.todayBtn { font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-2); padding: 8px 6px; margin-right: 2px; }
+
+.weekdays, .grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; padding: 0 10px; }
+.weekdays { padding-bottom: 8px; }
+.weekdays span { text-align: center; font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); }
+.gridArea { overflow: hidden; touch-action: pan-y; min-height: 340px; }
+
+.grid { animation-duration: 0.38s; animation-timing-function: var(--ease); animation-fill-mode: both; }
+.fade { animation-name: fade; }
+.fromRight { animation-name: fromRight; }
+.fromLeft { animation-name: fromLeft; }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fromRight { from { opacity: 0; transform: translateX(28px); } to { opacity: 1; transform: none; } }
+@keyframes fromLeft { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: none; } }
+
+.blank { aspect-ratio: 1; }
+.tile {
+  position: relative; aspect-ratio: 1; border-radius: var(--radius-tile); overflow: hidden; padding: 0;
+  background: var(--bg-2); border: 1px solid rgba(243, 237, 228, 0.045);
+  transition: transform 0.18s var(--ease), filter 0.2s;
+  contain: layout paint;
+}
+.tile:active { transform: scale(0.94); }
+.hasPhoto { border-color: transparent; background: var(--bg-3); }
+.hasEntry { background: linear-gradient(150deg, rgba(110, 28, 43, 0.38), var(--bg-2) 70%); border-color: rgba(154, 45, 65, 0.25); }
+.photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; -webkit-user-drag: none; }
+.hasPhoto::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(180deg, rgba(0,0,0,.5) 0%, rgba(0,0,0,0) 46%); }
+.placeholder { position: absolute; left: 50%; top: 56%; transform: translate(-50%, -50%); color: var(--accent-hi); opacity: 0.7; }
+.num { position: absolute; z-index: 1; top: 4px; left: 6px; font-size: 10.5px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; color: var(--text-3); letter-spacing: 0.01em; }
+.hasPhoto .num { color: var(--text); text-shadow: 0 1px 4px rgba(0,0,0,.65); }
+.hasEntry .num { color: var(--text-2); }
+.today { box-shadow: 0 0 0 1.5px var(--accent-hi); border-color: transparent; }
+.today .num { top: 3px; left: 4px; padding: 3px 5px 3px; border-radius: 6px; background: var(--accent-hi); color: var(--text); text-shadow: none; }
+.error { margin: 16px 20px; color: var(--accent-hi); font-size: 14px; }
