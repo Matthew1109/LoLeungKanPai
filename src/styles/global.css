@@ -2,7 +2,9 @@
 html { height: 100%; -webkit-text-size-adjust: 100%; background: var(--bg); color-scheme: dark; }
 body {
   margin: 0;
-  height: 100%;
+  /* Always taller than the viewport by the home-indicator inset, so the document can always scroll.
+     iOS Home Screen apps only place fixed bottom bars correctly while the page is scrollable. */
+  min-height: calc(100dvh + var(--safe-bottom));
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-sans);
