@@ -38,6 +38,21 @@ export interface Tag {
   updatedAt: string;
 }
 
+/**
+ * A reusable bar or place (schema v2). Drinks do not point at a Bar by id: `DrinkEntry.barName` stays the one
+ * display field, and a drink belongs to the bar whose `nameKey` equals nameKey(barName). Archived bars are no
+ * longer suggested for new drinks but stay on the drinks that have them.
+ */
+export interface Bar {
+  id: string;
+  name: string;
+  /** Lower-cased, whitespace-collapsed name. Unique. */
+  nameKey: string;
+  isArchived: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 /** Full-size, optimised photograph (long edge <= 1600 px). Kept apart from thumbnails so lists never touch it. */
 export interface PhotoRecord {
   id: string;
@@ -57,8 +72,8 @@ export interface ThumbRecord {
 
 /**
  * RESERVED, UNUSED. Manual calendar-cover selection was dropped from scope (owner decision): the cover is always the
- * earliest photographed entry of the day, derived on the fly (see utils/cover.ts). The store stays in schema v1 so
- * no migration is needed; nothing reads or writes it.
+ * earliest photographed entry of the day, derived on the fly (see utils/cover.ts). The store stays in the schema (created
+ * in v1) so no migration is needed; nothing reads or writes it.
  */
 export interface DayCover {
   dayKey: string;
@@ -88,6 +103,11 @@ export interface LkpDB extends DBSchema {
     value: Tag;
     indexes: { categoryNameKey: [string, string]; category: string };
   };
+  bars: {
+    key: string;
+    value: Bar;
+    indexes: { nameKey: string };
+  };
   photos: { key: string; value: PhotoRecord };
   thumbs: { key: string; value: ThumbRecord };
   dayCovers: { key: string; value: DayCover };
@@ -95,4 +115,4 @@ export interface LkpDB extends DBSchema {
 }
 
 export const DB_NAME = 'loleungkanpai';
-export const DB_VERSION = 1;
+export const DB_VERSION = 2;

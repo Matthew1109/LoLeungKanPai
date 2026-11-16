@@ -3,8 +3,9 @@ import { StorageFullError, toWriteError } from '../db/errors';
 import { assertLockHeld, isRestoreSupported, withMaintenanceLock, type LockHold } from '../db/locks';
 import { sweepWhileLocked } from '../db/maintenance';
 import { META_KEYS, restoreSessionExists, type RestoreSession } from '../db/metaRecords';
-import type { DrinkEntry, PhotoRecord } from '../db/schema';
+import type { Bar, DrinkEntry, PhotoRecord } from '../db/schema';
 import { runCommitTx, runWriteTx, type CommitTx } from '../db/tx';
+import { missingBars } from '../utils/bars';
 import { newId } from '../utils/id';
 import type { OpenedBackup } from './backupFormat';
 
@@ -70,6 +71,7 @@ export interface CommitPlan {
   sessionId: string;
   entries: DrinkEntry[];
   tags: OpenedBackup['data']['tags'];
+  bars: Bar[];
   stagedIds: string[];
   backupCreatedAt: string;
   at: string;
@@ -92,7 +94,7 @@ async function putAll<V>(items: readonly V[], put: (item: V) => Promise<unknown>
 }
 
 /**
- * The atomic commit (E3 v3, section 9 step 7). Runs inside ONE transaction over entries, tags, meta (written) and
+ * The atomic commit (E3 v3, section 9 step 7). Runs inside ONE transaction over entries, tags, bars, meta (written) and
  * photos, thumbs (only read). Before anything is cleared it checks that
  *  - this restore's own session record is still there (same sessionId), and
  *  - every staged photo and thumbnail exists.
@@ -112,8 +114,10 @@ export async function commitRestore(plan: CommitPlan): Promise<void> {
 
     const entries = tx.objectStore('entries');
     const tags = tx.objectStore('tags');
-    await Promise.all([entries.clear(), tags.clear()]);
+    const bars = tx.objectStore('bars');
+    await Promise.all([entries.clear(), tags.clear(), bars.clear()]);
     await putAll(plan.tags, (tag) => tags.put(tag));
+    await putAll(plan.bars, (bar) => bars.put(bar));
     await putAll(plan.entries, (entry) => entries.put(entry));
     await meta.delete(META_KEYS.restoreSession);
     await meta.delete(META_KEYS.entryDraft); // a draft belongs to an entry of the old diary
@@ -182,13 +186,19 @@ async function runRestore(hold: LockHold, backup: OpenedBackup, deps: RestoreDep
 
     // 3. Commit: one transaction, with its own pre-commit checks.
     report({ step: 'committing', done: 0, total: 1 });
+    const entries = backup.data.entries.map((e) => ({ ...e, photoId: e.photoId === null ? null : (idMap.get(e.photoId) as string) }));
+    const at = deps.now().toISOString();
+    // The backup's own bars, plus a bar for every bar name its drinks use that the list lacks (a backup made
+    // before the Bar library has no bars at all, so the library is rebuilt from the drinks).
+    const known = new Set(backup.data.bars.map((bar) => bar.nameKey));
     await commitRestore({
       sessionId: session.sessionId,
-      entries: backup.data.entries.map((e) => ({ ...e, photoId: e.photoId === null ? null : (idMap.get(e.photoId) as string) })),
+      entries,
       tags: backup.data.tags,
+      bars: [...backup.data.bars, ...missingBars(entries, known, deps.newId, at)],
       stagedIds: staged,
       backupCreatedAt: backup.manifest.createdAt,
-      at: deps.now().toISOString(),
+      at,
     });
   } catch (err) {
     await abandon(session.sessionId, staged); // nothing existing was changed; remove what we added

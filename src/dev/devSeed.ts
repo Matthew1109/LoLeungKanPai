@@ -91,7 +91,7 @@ export async function seedDemoData(): Promise<void> {
 /** Wipes every store, then restores the default tag libraries. Dev tools only. */
 export async function eraseEverything(): Promise<void> {
   const db = await getDb();
-  const names = ['entries', 'tags', 'photos', 'thumbs', 'dayCovers', 'meta'] as const;
+  const names = ['entries', 'tags', 'bars', 'photos', 'thumbs', 'dayCovers', 'meta'] as const;
   const tx = db.transaction([...names], 'readwrite');
   await Promise.all(names.map((n) => tx.objectStore(n).clear()));
   await tx.done;

@@ -26,4 +26,11 @@ export function upgrade(db: IDBPDatabase<LkpDB>, oldVersion: number, _newVersion
     db.createObjectStore('dayCovers', { keyPath: 'dayKey' });
     db.createObjectStore('meta', { keyPath: 'key' });
   }
+
+  if (oldVersion < 2) {
+    // The reusable Bar library. Purely additive: no existing store or record is touched. Bars for the bar names
+    // already on drinks are added after the upgrade, by syncBarsFromEntries() at start-up.
+    const bars = db.createObjectStore('bars', { keyPath: 'id' });
+    bars.createIndex('nameKey', 'nameKey', { unique: true });
+  }
 }

@@ -2,7 +2,7 @@ import { BACKUP_APP, BACKUP_FORMAT_VERSION, photoFileName, type BackupData, type
 import { ZipWriter } from '../src/backup/zip';
 import { getDb } from '../src/db';
 import { saveEntry } from '../src/db/entryRepo';
-import { DB_VERSION, type DrinkEntry, type PhotoRecord, type Tag } from '../src/db/schema';
+import { DB_VERSION, type Bar, type DrinkEntry, type PhotoRecord, type Tag } from '../src/db/schema';
 import { at, makeEntry } from './helpers';
 
 /** Bytes that look like a JPEG to the backup reader (the real decode is injected in restore tests). */
@@ -26,7 +26,12 @@ export const tag = (id: string, name: string, category: Tag['category'], patch: 
   createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z', ...patch,
 });
 
-/** A small, valid backup: 3 entries (two with photos), 3 tags (one archived), photo ids p1 and p2. */
+export const bar = (id: string, name: string, patch: Partial<Bar> = {}): Bar => ({
+  id, name, nameKey: name.toLowerCase(), isArchived: false,
+  createdAt: '2026-01-01T00:00:00.000Z', updatedAt: '2026-01-01T00:00:00.000Z', ...patch,
+});
+
+/** A small, valid backup: 3 entries (two with photos), 3 tags (one archived), 1 bar ("Pub", used by e3), photo ids p1 and p2. */
 export function sampleParts(): BackupParts {
   const entries: DrinkEntry[] = [
     makeEntry('e1', '2026-05-01', 20, { drinkName: 'Negroni — 好 🍸', photoId: 'p1', baseSpiritTagIds: ['t-gin'], ingredientTagIds: ['t-lime'], isFavourite: true, notes: 'a\nb' }),
@@ -34,9 +39,10 @@ export function sampleParts(): BackupParts {
     makeEntry('e3', '2026-05-03', 22, { drinkName: 'Pilsner', category: null, barName: 'Pub', baseSpiritTagIds: ['t-old'] }),
   ];
   const tags: Tag[] = [tag('t-gin', 'Gin', 'BASE_SPIRIT'), tag('t-old', 'Old tag', 'BASE_SPIRIT', { isArchived: true }), tag('t-lime', 'Lime', 'INGREDIENT')];
+  const bars: Bar[] = [bar('b-pub', 'Pub')];
   const photos = { p1: jpegBytes('p1'), p2: jpegBytes('p2', 5000) };
   const data: BackupData = {
-    entries, tags,
+    entries, tags, bars,
     photos: Object.entries(photos).map(([id, bytes]) => ({ id, mime: 'image/jpeg', size: bytes.length, width: 40, height: 30, createdAt: at('2026-05-01', 20) })),
   };
   const manifest: BackupManifest = {

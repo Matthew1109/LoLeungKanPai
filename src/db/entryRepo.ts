@@ -8,6 +8,9 @@ import { runWriteTx, type WriteTx } from './tx';
 import type { DrinkEntry, PhotoRecord } from './schema';
 import { isValidDateTime, validateEntry, type EntryProblem } from '../utils/entryValidation';
 import { toDayKey } from '../utils/dates';
+import { tidyBarName } from '../utils/bars';
+import { newId } from '../utils/id';
+import { nameKey } from '../utils/normalise';
 
 export async function getEntriesInRange(startDayKey: string, endDayKey: string): Promise<DrinkEntry[]> {
   const db = await getDb();
@@ -75,6 +78,25 @@ async function trackRemoval(tx: WriteTx, entryId: string): Promise<void> {
   if (next !== state) await meta.put({ key: META_KEYS.backupState, value: next });
 }
 
+/**
+ * Keeps the Bar library in step with a saved drink (same transaction): a bar name the library does not have yet is
+ * added as a new bar, and an archived bar that the user now chose for this drink is restored. Nothing happens for a
+ * blank bar or when the drink's bar did not change (editing a drink at an archived bar never un-archives it).
+ * Never throws for the name's length: a drink may always be saved, whatever the Bar library allows.
+ */
+async function registerBar(tx: WriteTx, barName: string, previousBarName: string, stamp: string): Promise<void> {
+  const name = tidyBarName(barName);
+  const key = nameKey(name);
+  if (key === '') return;
+  const bars = tx.objectStore('bars');
+  const found = await bars.index('nameKey').get(key);
+  if (!found) {
+    await bars.add({ id: newId(), name, nameKey: key, isArchived: false, createdAt: stamp, updatedAt: stamp });
+    return;
+  }
+  if (found.isArchived && key !== nameKey(previousBarName)) await bars.put({ ...found, isArchived: false, updatedAt: stamp });
+}
+
 /** A form draft belongs to one entry id; once that entry is saved or deleted the draft must not survive. */
 async function clearDraftFor(tx: WriteTx, entryId: string): Promise<void> {
   const meta = tx.objectStore('meta');
@@ -87,7 +109,8 @@ async function clearDraftFor(tx: WriteTx, entryId: string): Promise<void> {
  * Creates or updates an entry. Always `put` by id, so an edit (or a double tap) can never create a duplicate.
  *
  * One transaction, all or nothing: the entry, a new photo + thumbnail, removal of a replaced/removed photo
- * (unless another entry still uses it), the backup bookkeeping and removal of the matching form draft.
+ * (unless another entry still uses it), its bar in the Bar library (added or restored when needed), the backup
+ * bookkeeping and removal of the matching form draft.
  *
  * The repository owns the derived fields: `dayKey` (local calendar day of `dateTime`), `createdAt` (kept from the
  * stored entry on edits), `updatedAt` (now) and `photoId` (taken from `photo`; for 'keep' the stored value).
@@ -130,6 +153,7 @@ export async function saveEntry(input: DrinkEntry, photo: PhotoChange = KEEP_PHO
     };
 
     await entries.put(next);
+    await registerBar(tx, next.barName, existing?.barName ?? '', stamp);
     if (photo.kind === 'replace') {
       await tx.objectStore('photos').put(photo.record);
       await tx.objectStore('thumbs').put({ id: photo.record.id, blob: photo.thumb });

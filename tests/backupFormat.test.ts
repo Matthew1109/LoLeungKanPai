@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BackupFormatError, listBackupFiles, openBackup, type BackupErrorCode } from '../src/backup/backupFormat';
 import { ZipReader, ZipWriter } from '../src/backup/zip';
 import { FLAT_BACKUP_BASE64, PYTHON_JPEG_LENGTH, WRAPPED_BACKUP_BASE64, fromBase64 } from './fixtures/pythonZips';
-import { backupBlob, cloneParts, jpegBytes, sampleParts, tag, type BackupParts } from './backupHelpers';
+import { backupBlob, bar, cloneParts, jpegBytes, sampleParts, tag, type BackupParts } from './backupHelpers';
 import { makeEntry } from './helpers';
 
 async function expectBackupError(blob: Blob, code: BackupErrorCode): Promise<void> {
@@ -30,6 +30,7 @@ describe('openBackup: valid backups', () => {
     const opened = await openBackup(backupBlob(parts), (done, total) => seen.push([done, total]));
     expect(opened.data.entries).toEqual(parts.data.entries);
     expect(opened.data.tags).toEqual(parts.data.tags);
+    expect(opened.data.bars).toEqual(parts.data.bars);
     expect(opened.manifest.counts).toEqual({ entries: 3, tags: 3, photos: 2 });
     expect(seen).toEqual([[1, 2], [2, 2]]);
     expect(opened.photoBytes).toBe(parts.photos.p1.length + parts.photos.p2.length);
@@ -38,7 +39,7 @@ describe('openBackup: valid backups', () => {
 
   it('opens a backup of an empty journal', async () => {
     const parts = sampleParts();
-    parts.data = { entries: [], tags: [], photos: [] };
+    parts.data = { entries: [], tags: [], bars: [], photos: [] };
     parts.photos = {};
     parts.manifest.counts = { entries: 0, tags: 0, photos: 0 };
     parts.manifest.dateRange = { first: null, last: null };
@@ -53,6 +54,7 @@ describe('openBackup: valid backups', () => {
     expect(opened.data.entries[0].drinkName).toBe('Negroní — 好 🍸');
     expect(opened.data.entries[0].notes).toBe('line 1\nline 2');
     expect(opened.data.tags[0].name).toBe('Gin');
+    expect(opened.data.bars).toEqual([]); // made before the Bar library: no bars in data.json
     expect((await opened.readPhoto('p1')).length).toBe(PYTHON_JPEG_LENGTH);
   });
 
@@ -73,6 +75,36 @@ describe('openBackup: valid backups', () => {
     parts.manifest.counts.photos = 3;
     const opened = await openBackup(backupBlob(parts));
     expect(opened.photoBytes).toBe(parts.photos.p1.length + parts.photos.p2.length);
+  });
+});
+
+describe('openBackup: bars', () => {
+  const withoutBars = (parts: BackupParts): Uint8Array => {
+    const { entries, tags, photos } = parts.data; // what an older version of the app wrote
+    return new TextEncoder().encode(JSON.stringify({ entries, tags, photos }));
+  };
+
+  it('a backup made before the Bar library (no "bars" in data.json) opens with an empty list', async () => {
+    const parts = sampleParts();
+    const opened = await openBackup(backupBlob(parts, { rawData: withoutBars(parts) }));
+    expect(opened.data.bars).toEqual([]);
+    expect(opened.data.entries).toEqual(parts.data.entries);
+  });
+
+  it('bars are not part of the manifest counts, and archived bars are kept as they are', async () => {
+    const parts = cloneParts(sampleParts());
+    parts.data.bars.push(bar('b-old', 'Closed Bar', { isArchived: true }));
+    const opened = await openBackup(backupBlob(parts));
+    expect(opened.manifest.counts).toEqual({ entries: 3, tags: 3, photos: 2 });
+    expect(opened.data.bars).toEqual(parts.data.bars);
+  });
+
+  it('the name key is recomputed, never trusted', async () => {
+    const parts = cloneParts(sampleParts());
+    parts.data.bars[0].nameKey = 'WRONG';
+    parts.data.bars.push(bar('b-2', '  Bar   Leone '));
+    const opened = await openBackup(backupBlob(parts));
+    expect(opened.data.bars.map((b) => b.nameKey)).toEqual(['pub', 'bar leone']);
   });
 });
 
@@ -202,6 +234,24 @@ describe('openBackup: what is not a usable backup', () => {
   it('tags without a usable name or category are INVALID', async () => {
     await expectInvalid((p) => (p.data.tags[0].name = '   '));
     await expectInvalid((p) => ((p.data.tags[0] as unknown as { category: string }).category = 'SPIRIT'));
+  });
+
+  it('bars that are not a list, or break the rules, are INVALID', async () => {
+    await expectInvalid((p) => ((p.data as unknown as { bars: unknown }).bars = 'Pub'));
+    await expectInvalid((p) => ((p.data as unknown as { bars: unknown }).bars = { b: 1 }));
+    await expectInvalid((p) => (p.data.bars as unknown[]).push(7));
+    await expectInvalid((p) => (p.data.bars[0].name = '   '));
+    await expectInvalid((p) => ((p.data.bars[0] as unknown as { name: unknown }).name = 7));
+    await expectInvalid((p) => (p.data.bars[0].id = ''));
+    await expectInvalid((p) => ((p.data.bars[0] as unknown as { isArchived: unknown }).isArchived = 'no'));
+    await expectInvalid((p) => (p.data.bars[0].createdAt = 'yesterday'));
+    await expectInvalid((p) => (p.data.bars[0].updatedAt = ''));
+  });
+
+  it('duplicate bar ids or names (any capitalisation or spacing) are INVALID', async () => {
+    await expectInvalid((p) => p.data.bars.push(bar('b-pub', 'Other')));
+    await expectInvalid((p) => p.data.bars.push(bar('b-2', ' PUB ')));
+    await expectInvalid((p) => p.data.bars.push(bar('b-2', 'Bar Leone'), bar('b-3', 'bar  leone'))); // two new bars, same name
   });
 
   it('data.json that is not the expected shape is INVALID', async () => {

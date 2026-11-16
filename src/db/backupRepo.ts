@@ -3,13 +3,14 @@ import { notifyDataChanged } from './changeSignal';
 import { META_KEYS } from './metaRecords';
 import { afterBackup, evaluateBackupReminder, normaliseBackupState, type ReminderResult } from './backupReminder';
 import { runWriteTx } from './tx';
-import type { DrinkEntry, Tag } from './schema';
+import type { Bar, DrinkEntry, Tag } from './schema';
 
-/** Consistent copy of entries and tags, plus the instant it stands for (see createBackup). */
+/** Consistent copy of entries, tags and bars, plus the instant it stands for (see createBackup). */
 export interface Snapshot {
   at: string;
   entries: DrinkEntry[];
   tags: Tag[];
+  bars: Bar[];
 }
 
 /**
@@ -21,10 +22,14 @@ export async function takeSnapshot(): Promise<Snapshot> {
   const at = new Date().toISOString();
   await new Promise((resolve) => setTimeout(resolve, 2));
   const db = await getDb();
-  const tx = db.transaction(['entries', 'tags'], 'readonly');
-  const [entries, tags] = await Promise.all([tx.objectStore('entries').getAll(), tx.objectStore('tags').getAll()]);
+  const tx = db.transaction(['entries', 'tags', 'bars'], 'readonly');
+  const [entries, tags, bars] = await Promise.all([
+    tx.objectStore('entries').getAll(),
+    tx.objectStore('tags').getAll(),
+    tx.objectStore('bars').getAll(),
+  ]);
   await tx.done;
-  return { at, entries, tags };
+  return { at, entries, tags, bars };
 }
 
 /** The backup file was handed to the share sheet / download: changes up to its snapshot are now protected. */

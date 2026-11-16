@@ -26,7 +26,7 @@ export const backupFileName = (d: Date): string => `LoLeungKanPai-backup-${toDay
 const json = (value: unknown): Uint8Array => new TextEncoder().encode(JSON.stringify(value));
 
 /**
- * Builds the backup in memory-bounded steps: entries and tags are snapshotted in one read, then photos are read one
+ * Builds the backup in memory-bounded steps: entries, tags and bars are snapshotted in one read, then photos are read one
  * at a time. Thumbnails are not exported (they are regenerated on restore). Does not touch the journal.
  */
 export async function createBackup(
@@ -62,7 +62,7 @@ export async function createBackup(
     counts,
     dateRange: { first: times[0] ?? null, last: times[times.length - 1] ?? null },
   };
-  const data: BackupData = { entries: snapshot.entries, tags: snapshot.tags, photos: photoMeta };
+  const data: BackupData = { entries: snapshot.entries, tags: snapshot.tags, bars: snapshot.bars, photos: photoMeta };
   zip.add('data.json', json(data));
   zip.add('manifest.json', json(manifest));
   return { blob: zip.finish(), fileName: backupFileName(now), snapshotAt: snapshot.at, counts };

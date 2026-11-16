@@ -44,6 +44,12 @@ export default function Settings() {
             <ChevronRightIcon width={20} height={20} />
           </Link>
         </li>
+        <li className={`${s.row} ${s.rowLinkItem}`}>
+          <Link to="/settings/bars" className={s.rowLink}>
+            <span>{t('settings.section.bars')}</span>
+            <ChevronRightIcon width={20} height={20} />
+          </Link>
+        </li>
       </ul>
 
       <StorageSection />

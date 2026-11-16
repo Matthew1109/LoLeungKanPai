@@ -10,6 +10,7 @@ import CollectionsScreen from './features/collections/CollectionsScreen';
 import GalleryScreen from './features/gallery/GalleryScreen';
 import DailyJournal from './features/journal/DailyJournal';
 import Settings from './features/settings/Settings';
+import ManageBars from './features/bars/ManageBars';
 import ManageTags from './features/tags/ManageTags';
 import AddEntryScreen from './features/add/AddEntryScreen';
 import EditEntryScreen from './features/add/EditEntryScreen';
@@ -59,6 +60,7 @@ export default function App() {
         <Route path="/collections/:kind/:tagId" element={<CollectionScreen />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/settings/tags" element={<ManageTags />} />
+        <Route path="/settings/bars" element={<ManageBars />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <BottomNav />

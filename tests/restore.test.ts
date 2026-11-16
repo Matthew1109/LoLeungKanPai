@@ -13,7 +13,7 @@ import { RestoreInProgressError, StorageFullError } from '../src/db/errors';
 import { MAINTENANCE_LOCK_NAME } from '../src/db/locks';
 import { sweepOrphanPhotos } from '../src/db/maintenance';
 import { META_KEYS } from '../src/db/metaRecords';
-import { backupBlob, cloneParts, jpegPhoto, sampleParts, seedSampleJournal, tag } from './backupHelpers';
+import { backupBlob, bar, cloneParts, jpegPhoto, sampleParts, seedSampleJournal, tag } from './backupHelpers';
 import { clearAll, hasRestoreSession, makeEntry, storedPhotoKeys, stubNoWebLocks, stubWebLocks } from './helpers';
 
 beforeEach(clearAll);
@@ -39,7 +39,7 @@ function makeDeps(over: Partial<RestoreDeps> = {}): RestoreDeps {
 async function dump(): Promise<Record<string, unknown[]>> {
   const db = await getDb();
   const out: Record<string, unknown[]> = {};
-  for (const name of ['entries', 'tags', 'photos', 'thumbs', 'dayCovers', 'meta'] as const) {
+  for (const name of ['entries', 'tags', 'bars', 'photos', 'thumbs', 'dayCovers', 'meta'] as const) {
     out[name] = (await db.getAll(name)).map((row) => {
       const copy = { ...(row as unknown as Record<string, unknown>) };
       if (copy.blob instanceof Blob) copy.blob = `${copy.blob.size}:${copy.blob.type}`;
@@ -59,10 +59,11 @@ const deferred = () => {
 
 const open = (parts = sampleParts()): Promise<OpenedBackup> => openBackup(backupBlob(parts));
 
-/** A journal that is NOT the backup's: its own tag, entry, photo, a form draft and a changed-entries record. */
+/** A journal that is NOT the backup's: its own tag, bar, entry, photo, a form draft and a changed-entries record. */
 async function seedOldJournal(): Promise<void> {
   const db = await getDb();
   await db.put('tags', tag('old-t', 'Old tag', 'INGREDIENT'));
+  await db.put('bars', bar('old-b', 'Old Bar'));
   await saveEntry(makeEntry('old-e1', '2026-01-01', 12, { photoId: null, ingredientTagIds: ['old-t'] }), { kind: 'replace', ...jpegPhoto('old-p1') });
   await db.put('meta', { key: META_KEYS.entryDraft, value: { entryId: 'old-e1', note: 'unsaved text' } });
 }
@@ -73,6 +74,7 @@ const planFor = (over: Partial<CommitPlan> = {}): CommitPlan => {
     sessionId: 's1',
     entries: parts.data.entries.map((e) => ({ ...e, photoId: e.photoId === 'p1' ? 'n1' : e.photoId === 'p2' ? 'n2' : null })),
     tags: parts.data.tags,
+    bars: parts.data.bars,
     stagedIds: ['n1', 'n2'],
     backupCreatedAt: parts.manifest.createdAt,
     at: NOW.toISOString(),
@@ -122,6 +124,7 @@ describe('restoreBackup: success', () => {
       parts.data.entries.map((e) => ({ ...e, photoId: e.photoId === 'p1' ? 'new-2' : e.photoId === 'p2' ? 'new-3' : null })),
     );
     expect(await db.getAll('tags')).toEqual([...parts.data.tags].sort((a, b) => (a.id < b.id ? -1 : 1))); // stored in key order
+    expect(await db.getAll('bars')).toEqual(parts.data.bars); // the backup's bars; the old journal's bar is gone
 
     // photos: only the two new ones; the old photo was swept; backup ids are not reused
     expect(await storedPhotoKeys()).toEqual({ photos: ['new-2', 'new-3'], thumbs: ['new-2', 'new-3'] });
@@ -154,6 +157,8 @@ describe('restoreBackup: success', () => {
     const db = await getDb();
     const originalEntries = await db.getAll('entries');
     const originalTags = await db.getAll('tags');
+    const originalBars = await db.getAll('bars');
+    expect(originalBars.map((b) => b.name)).toEqual(['Pub']); // registered when e3 was saved
     const originalBytes = new Map<string, Uint8Array>();
     for (const id of ['p1', 'p2']) originalBytes.set(id, new Uint8Array(await ((await db.get('photos', id))?.blob as Blob).arrayBuffer()));
     const created = await createBackup('t');
@@ -165,6 +170,7 @@ describe('restoreBackup: success', () => {
     const restored = await db.getAll('entries');
     expect(restored.map((e) => ({ ...e, photoId: null }))).toEqual(originalEntries.map((e) => ({ ...e, photoId: null })));
     expect(await db.getAll('tags')).toEqual(originalTags);
+    expect(await db.getAll('bars')).toEqual(originalBars);
     const byEntry = new Map(restored.map((e) => [e.id, e.photoId as string | null]));
     expect(byEntry.get('e3')).toBeNull();
     for (const [entryId, oldPhotoId] of [['e1', 'p1'], ['e2', 'p2']]) {
@@ -173,6 +179,28 @@ describe('restoreBackup: success', () => {
       expect(new Uint8Array(await ((await db.get('photos', newId))?.blob as Blob).arrayBuffer())).toEqual(originalBytes.get(oldPhotoId));
       expect(await db.get('thumbs', newId)).toBeDefined();
     }
+  });
+
+  it('a backup made before the Bar library (no bars in it) gets its bars from the drinks', async () => {
+    stubWebLocks();
+    await seedOldJournal();
+    const parts = sampleParts();
+    const { entries, tags, photos } = parts.data;
+    const old = backupBlob(parts, { rawData: new TextEncoder().encode(JSON.stringify({ entries, tags, photos })) });
+    await restoreBackup(await openBackup(old), makeDeps());
+    const bars = await (await getDb()).getAll('bars');
+    expect(bars).toEqual([{ id: 'new-4', name: 'Pub', nameKey: 'pub', isArchived: false, createdAt: NOW.toISOString(), updatedAt: NOW.toISOString() }]);
+    expect((await storedPhotoKeys()).photos).toEqual(['new-2', 'new-3']); // photo ids are not disturbed by the extra id
+  });
+
+  it('keeps the backup\'s own bars as they are (archived ones too) and adds only the bars its drinks still need', async () => {
+    stubWebLocks();
+    const parts = cloneParts(sampleParts());
+    parts.data.bars = [bar('b-closed', 'Closed Bar', { isArchived: true })]; // no "Pub" in the list although e3 is there
+    parts.data.entries[0].barName = 'closed  BAR'; // an archived bar still counts as known: no duplicate is made
+    await restoreBackup(await open(parts), makeDeps());
+    const bars = await (await getDb()).getAll('bars');
+    expect(bars.map((b) => [b.id, b.name, b.isArchived])).toEqual([['b-closed', 'Closed Bar', true], ['new-4', 'Pub', false]]);
   });
 
   it('restoring into the SAME device never overwrites a photo: the old copies are swept only after the commit', async () => {
@@ -208,13 +236,14 @@ describe('restoreBackup: success', () => {
     stubWebLocks();
     await seedOldJournal();
     const parts = sampleParts();
-    parts.data = { entries: [], tags: [], photos: [] };
+    parts.data = { entries: [], tags: [], bars: [], photos: [] };
     parts.photos = {};
     parts.manifest.counts = { entries: 0, tags: 0, photos: 0 };
     const result = await restoreBackup(await open(parts), makeDeps());
     expect(result).toMatchObject({ entries: 0, tags: 0, photos: 0 });
     const state = await dump();
     expect(state.entries).toEqual([]);
+    expect(state.bars).toEqual([]); // the old journal's bar is gone too
     expect(state.photos).toEqual([]);
     expect(state.thumbs).toEqual([]);
   });
@@ -409,6 +438,7 @@ describe('commitRestore: the commit', () => {
     const state = await dump();
     expect((state.entries as Array<{ id: string }>).map((e) => e.id)).toEqual(['e1', 'e2', 'e3']);
     expect((state.tags as Array<{ id: string }>).map((t) => t.id)).toEqual(['t-gin', 't-lime', 't-old']);
+    expect((state.bars as Array<{ id: string }>).map((b) => b.id)).toEqual(['b-pub']);
     expect(await metaKeys()).toEqual([META_KEYS.backupState, META_KEYS.lastRestore]);
   });
 

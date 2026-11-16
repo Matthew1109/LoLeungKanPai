@@ -1,4 +1,4 @@
-import { DB_VERSION, type DrinkEntry, type Tag } from '../db/schema';
+import { DB_VERSION, type Bar, type DrinkEntry, type Tag } from '../db/schema';
 import { isValidDayKey } from '../utils/dates';
 import { nameKey } from '../utils/normalise';
 import { isValidDateTime, validateEntry } from '../utils/entryValidation';
@@ -29,6 +29,8 @@ export interface BackupPhotoMeta {
 export interface BackupData {
   entries: DrinkEntry[];
   tags: Tag[];
+  /** The Bar library. Backups made before it existed have no such list in data.json; reading one yields []. */
+  bars: Bar[];
   photos: BackupPhotoMeta[];
 }
 
@@ -121,6 +123,17 @@ function checkTag(raw: unknown, index: number): Tag {
   return { id: raw.id, name: raw.name, nameKey: nameKey(raw.name), category, isArchived, createdAt, updatedAt };
 }
 
+function checkBar(raw: unknown, index: number): Bar {
+  const bad = (what: string) => new BackupFormatError('INVALID', `bar ${index + 1}: ${what}`);
+  if (!isRecord(raw)) throw bad('not an object');
+  if (!isStr(raw.id) || raw.id.length === 0) throw bad('id');
+  if (!isStr(raw.name) || raw.name.trim().length === 0) throw bad('name');
+  const { isArchived, createdAt, updatedAt } = raw;
+  if (typeof isArchived !== 'boolean') throw bad('isArchived');
+  if (!isValidDateTime(createdAt) || !isValidDateTime(updatedAt)) throw bad('dates');
+  return { id: raw.id, name: raw.name, nameKey: nameKey(raw.name), isArchived, createdAt, updatedAt };
+}
+
 function checkPhotoMeta(raw: unknown, index: number): BackupPhotoMeta {
   const bad = (what: string) => new BackupFormatError('INVALID', `photo ${index + 1}: ${what}`);
   if (!isRecord(raw)) throw bad('not an object');
@@ -137,7 +150,11 @@ export function validateBackupData(raw: unknown, manifest: BackupManifest): Back
   if (!isRecord(raw) || !Array.isArray(raw.entries) || !Array.isArray(raw.tags) || !Array.isArray(raw.photos)) {
     throw new BackupFormatError('INVALID', 'data.json');
   }
-  if (raw.entries.length > MAX_ROWS || raw.tags.length > MAX_ROWS || raw.photos.length > MAX_ROWS) throw new BackupFormatError('INVALID', 'too many rows');
+  const rawBars: unknown = raw.bars === undefined ? [] : raw.bars; // backups from before the Bar library have none
+  if (!Array.isArray(rawBars)) throw new BackupFormatError('INVALID', 'bars');
+  if (raw.entries.length > MAX_ROWS || raw.tags.length > MAX_ROWS || raw.photos.length > MAX_ROWS || rawBars.length > MAX_ROWS) {
+    throw new BackupFormatError('INVALID', 'too many rows');
+  }
   if (raw.entries.length !== manifest.counts.entries || raw.tags.length !== manifest.counts.tags || raw.photos.length !== manifest.counts.photos) {
     throw new BackupFormatError('INVALID', 'counts do not match');
   }
@@ -151,6 +168,16 @@ export function validateBackupData(raw: unknown, manifest: BackupManifest): Back
     if (tagKeys.has(key)) throw new BackupFormatError('INVALID', `duplicate tag "${tag.name}"`);
     tagById.set(tag.id, tag);
     tagKeys.add(key);
+  }
+
+  const bars = rawBars.map(checkBar);
+  const barIds = new Set<string>();
+  const barKeys = new Set<string>();
+  for (const bar of bars) {
+    if (barIds.has(bar.id)) throw new BackupFormatError('INVALID', 'duplicate bar id');
+    if (barKeys.has(bar.nameKey)) throw new BackupFormatError('INVALID', `duplicate bar "${bar.name}"`);
+    barIds.add(bar.id);
+    barKeys.add(bar.nameKey);
   }
 
   const photos = raw.photos.map(checkPhotoMeta);
@@ -179,7 +206,7 @@ export function validateBackupData(raw: unknown, manifest: BackupManifest): Back
       isFavourite: e.isFavourite, createdAt: e.createdAt, updatedAt: e.updatedAt,
     });
   });
-  return { entries, tags, photos };
+  return { entries, tags, bars, photos };
 }
 
 /**

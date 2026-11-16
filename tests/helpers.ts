@@ -26,7 +26,7 @@ export function makePhoto(id: string): { record: PhotoRecord; thumb: Blob } {
   };
 }
 
-const ALL_STORES = ['entries', 'tags', 'photos', 'thumbs', 'dayCovers', 'meta'] as const;
+const ALL_STORES = ['entries', 'tags', 'bars', 'photos', 'thumbs', 'dayCovers', 'meta'] as const;
 
 /** Empties every store (call in beforeEach). */
 export async function clearAll(): Promise<void> {

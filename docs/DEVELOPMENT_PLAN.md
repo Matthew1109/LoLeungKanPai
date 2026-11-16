@@ -1,4 +1,4 @@
-# LoLeungKanPai: Development Plan (v9, Phase 5 delivered for review)
+# LoLeungKanPai: Development Plan (v10, Phase 5 plus update: app icon and Bar library, delivered for review)
 
 ## Approved decisions
 | # | Decision |
@@ -71,5 +71,6 @@
 
 - Phase 4 approved.
 - v9: **Phase 5 (final polish and reliability) delivered for review.** Storage meter and warnings (D6), crash screen, offline and integrity review. No new features, no database migration.
+- v10: **Update delivered for review: new app icon and the Bar library** (owner request; not a new phase). D14 holds: the icon files in `public/*.png` were regenerated under the same names. Bars: a reusable library of bar names with suggestions in the drink form, Settings > Bar management (add, rename, archive/restore; no delete), and bars in backups. The only database change in the project so far: version 1 to 2, one new `bars` store, existing data untouched; bars for the existing drinks are added at the first start. Backup format version unchanged (older backups restore). Detail: `BARS_PLAN.md`.
 
-Phase 2 detail: see `PHASE2_PLAN.md`. Phase 3 detail: see `PHASE3_PLAN.md`. Phase 4 detail: see `PHASE4_PLAN.md`. Phase 5 detail: see `PHASE5_PLAN.md`.
+Phase 2 detail: see `PHASE2_PLAN.md`. Phase 3 detail: see `PHASE3_PLAN.md`. Phase 4 detail: see `PHASE4_PLAN.md`. Phase 5 detail: see `PHASE5_PLAN.md`. Update (icon, Bar library) detail: see `BARS_PLAN.md`.

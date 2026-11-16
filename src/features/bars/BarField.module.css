@@ -1,0 +1,6 @@
+.wrap { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.list { list-style: none; margin: 0; padding: 0; overflow: hidden; border-radius: 14px; border: 1px solid var(--hairline); background: var(--bg-2); }
+.item + .item { border-top: 1px solid var(--hairline); }
+.option { display: block; width: 100%; min-height: 48px; padding: 10px 14px; font-size: 16px; line-height: 1.3; text-align: left; color: var(--text); overflow-wrap: anywhere; }
+.option:active { background: var(--bg-3); }
+.hint { font-size: 13px; line-height: 1.4; color: var(--text-2); }

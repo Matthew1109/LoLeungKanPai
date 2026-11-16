@@ -11,6 +11,7 @@ import { t } from '../../i18n';
 import type { MessageKey } from '../../i18n/locales/en';
 import { PhotoProcessingError, processPhoto } from '../../services/imageProcessing';
 import { newId } from '../../utils/id';
+import BarField from '../bars/BarField';
 import TagField from '../tags/TagField';
 import { makeDraft } from './draftModel';
 import { buildEntryInput, sameFields, sameTagSelection, tagSelectionFromEntry, type TagSelection } from './entryFormModel';
@@ -348,15 +349,12 @@ export default function EntryForm({
 
         <div className={s.field}>
           <label className={s.label} htmlFor={ids.bar}>{t('form.bar')}</label>
-          <input
+          <BarField
             id={ids.bar}
-            className={s.input}
-            type="text"
+            inputClassName={s.input}
             value={fields.barName}
             placeholder={t('form.bar.placeholder')}
-            autoCapitalize="words"
-            autoComplete="off"
-            onChange={(event) => setField('barName', event.target.value)}
+            onChange={(value) => setField('barName', value)}
           />
         </div>
 

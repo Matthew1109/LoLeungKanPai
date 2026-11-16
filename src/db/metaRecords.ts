@@ -1,6 +1,6 @@
 /**
- * Records kept in the existing `meta` store (key/value). They are plain data, not schema: adding them needs
- * no migration, and the database stays at version 1.
+ * Records kept in the existing `meta` store (key/value). They are plain data, not schema: adding one needs no
+ * migration (schema changes, such as the `bars` store of version 2, live in migrations.ts).
  */
 export const META_KEYS = {
   /** Present only while a restore is staging or committing, or after one was interrupted. */

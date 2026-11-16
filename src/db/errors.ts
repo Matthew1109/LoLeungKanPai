@@ -38,6 +38,18 @@ export class TagError extends Error {
   }
 }
 
+export type BarErrorCode = 'EMPTY' | 'TOO_LONG' | 'DUPLICATE' | 'NOT_FOUND';
+
+/** A bar change broke a rule (blank, over-long or duplicate name, unknown bar). Nothing was written. */
+export class BarError extends Error {
+  readonly code: BarErrorCode;
+  constructor(code: BarErrorCode) {
+    super(`Bar change refused: ${code}`);
+    this.name = 'BarError';
+    this.code = code;
+  }
+}
+
 /** True for the many shapes browsers use to say "out of space" (Safari/Chrome/Firefox, wrapped or not). */
 export function isQuotaError(err: unknown): boolean {
   if (typeof err !== 'object' || err === null) return false;
@@ -52,7 +64,7 @@ export function isQuotaError(err: unknown): boolean {
 export function toWriteError(err: unknown): unknown {
   if (
     err instanceof EntryValidationError || err instanceof RestoreInProgressError || err instanceof StorageFullError ||
-    err instanceof TagError
+    err instanceof TagError || err instanceof BarError
   ) {
     return err;
   }

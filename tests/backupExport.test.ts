@@ -32,6 +32,8 @@ describe('createBackup', () => {
     const db = await getDb();
     expect(opened.data.entries).toEqual(await db.getAll('entries'));
     expect(opened.data.tags).toEqual(await db.getAll('tags'));
+    expect(opened.data.bars).toEqual(await db.getAll('bars'));
+    expect(opened.data.bars.map((b) => b.name)).toEqual(['Pub']); // the bar of entry e3, registered when it was saved
     expect(opened.manifest.app).toBe('LoLeungKanPai');
     expect(opened.manifest.appVersion).toBe('0.2.0-test');
     expect(opened.manifest.createdAt).toBe(created.snapshotAt);
@@ -55,6 +57,7 @@ describe('createBackup', () => {
     const created = await createBackup('t');
     const opened = await openBackup(created.blob);
     expect(opened.manifest.counts).toEqual({ entries: 0, tags: 0, photos: 0 });
+    expect(opened.data.bars).toEqual([]);
     expect(opened.manifest.dateRange).toEqual({ first: null, last: null });
   });
 
