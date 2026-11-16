@@ -2,7 +2,7 @@
 
 A private drinks and cocktail journal (PWA). Local-first: entries and photographs live in IndexedDB on the device. No backend, no accounts, no analytics.
 
-**Status: Phase 3 of 5 (tagging) delivered for review.** Phases 1 (calendar) and 2 (drink entries, backup and restore) are approved. See `docs/DEVELOPMENT_PLAN.md` and `docs/PHASE3_PLAN.md`.
+**Status: Phase 4 of 5 (gallery and collections) delivered for review.** Phases 1 (calendar), 2 (drink entries, backup and restore) and 3 (tagging) are approved. See `docs/DEVELOPMENT_PLAN.md` and `docs/PHASE4_PLAN.md`.
 
 ## Setup (one time, on your MacBook / AI0011 workspace terminal)
 
@@ -23,6 +23,12 @@ In Settings > Developer tools tap **Load demo data** to fill the calendar with s
 ## Tags
 
 Each drink can have several **Base spirit** tags and several **Ingredient** tags. In the Add / Edit form tap **+ Add**, tick tags, search, or type a new name and tap *Create*. Settings > **Tag management** adds, renames, archives (and restores) and deletes tags; it also shows how many drinks use each one. An archived tag is no longer offered for new drinks but stays on the drinks that already have it. A tag can be deleted only while no drink uses it. Tags are included in backups.
+
+## Gallery, Collections and search
+
+**Gallery** (tab *Gallery*): every drink that has a photo, newest first, three to a row. Tap a photo to open the drink. **Filters** narrows by year, month, favourites, base spirits and ingredients. Different filters combine with AND (for example 2026 AND favourites AND Gin). Inside base spirits, and inside ingredients, choose **Any** (a drink with at least one of the ticked tags) or **All** (a drink with every ticked tag). The filters live in the address, so Back from a drink returns to the same filtered view.
+
+**Collections** (tab *Collections*): **Search** at the top finds drinks by name, bar, notes or tag name (every word you type must match). Below it are four lists: **Base Spirits** and **Ingredients** (each tag with its drink count; tap one to see its drinks), **Favourite Drinks**, and **Recently Added** (the 30 drinks most recently recorded).
 
 ## Backup and restore
 
@@ -66,11 +72,12 @@ src/db/          IndexedDB schema, migrations, repositories (UI never touches In
                  (orphan photo sweep), locks (maintenance lock), backupReminder, draftRepo, metaRecords,
                  tagRepo (tag create/rename/archive/delete rules, counts)
 src/backup/      backup file format, own ZIP writer/reader, export, restore, share/download hand-over
-src/utils/       dates, ids, entry validation, calendar cover rule
-src/hooks/       data hooks (month data, day entries, one entry, object-URL management, toast)
+src/utils/       dates, ids, entry validation, calendar cover rule, entry sort orders
+src/hooks/       data hooks (month data, day entries, one entry, whole library, object-URL management, toast)
 src/features/    calendar, journal (day list + cards), entry (detail), add (entry form, photo picker,
                  draft/route logic; also used for editing), settings, backup (Settings sections, reminder banner),
-                 tags (tag picker in the form, Tag management screen)
+                 tags (tag picker in the form, Tag management screen), gallery (photo grid, filters),
+                 collections (hub, tag and favourite lists, search)
 src/components/  navigation, empty state, install/update prompts, icons, confirm dialog, toast
 src/i18n/        message catalogue (English now; Traditional Chinese slot ready)
 src/services/    image processing (1600 px JPEG q0.82 + 480 px thumbnail; thumbnail rebuild on restore)

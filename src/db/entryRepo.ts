@@ -21,6 +21,12 @@ export async function getEntriesForDay(dayKey: string): Promise<DrinkEntry[]> {
   return rows.sort((a, b) => (a.dateTime < b.dateTime ? -1 : a.dateTime > b.dateTime ? 1 : 0));
 }
 
+/** Every entry, in no particular order. The gallery, collections and search filter this in memory (personal-journal scale). */
+export async function getAllEntries(): Promise<DrinkEntry[]> {
+  const db = await getDb();
+  return db.getAll('entries');
+}
+
 export async function getEntry(id: string): Promise<DrinkEntry | undefined> {
   const db = await getDb();
   return db.get('entries', id);

@@ -3,9 +3,11 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import BottomNav from './components/BottomNav';
 import InstallHint from './components/InstallHint';
 import UpdatePrompt from './components/UpdatePrompt';
-import PlaceholderScreen from './components/PlaceholderScreen';
 import EmptyState from './components/EmptyState';
 import CalendarScreen from './features/calendar/CalendarScreen';
+import CollectionScreen from './features/collections/CollectionScreen';
+import CollectionsScreen from './features/collections/CollectionsScreen';
+import GalleryScreen from './features/gallery/GalleryScreen';
 import DailyJournal from './features/journal/DailyJournal';
 import Settings from './features/settings/Settings';
 import ManageTags from './features/tags/ManageTags';
@@ -48,11 +50,13 @@ export default function App() {
       <Routes>
         <Route path="/" element={<CalendarScreen />} />
         <Route path="/day/:dayKey" element={<DailyJournal />} />
-        <Route path="/gallery" element={<PlaceholderScreen title={t('placeholder.gallery.title')} body={t('placeholder.gallery.body')} />} />
+        <Route path="/gallery" element={<GalleryScreen />} />
         <Route path="/add" element={<AddEntryScreen />} />
         <Route path="/entry/:id" element={<EntryDetail />} />
         <Route path="/entry/:id/edit" element={<EditEntryScreen />} />
-        <Route path="/collections" element={<PlaceholderScreen title={t('placeholder.collections.title')} body={t('placeholder.collections.body')} />} />
+        <Route path="/collections" element={<CollectionsScreen />} />
+        <Route path="/collections/:kind" element={<CollectionScreen />} />
+        <Route path="/collections/:kind/:tagId" element={<CollectionScreen />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="/settings/tags" element={<ManageTags />} />
         <Route path="*" element={<Navigate to="/" replace />} />

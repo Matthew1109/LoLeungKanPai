@@ -1,4 +1,4 @@
-# LoLeungKanPai: Development Plan (v7, Phase 3 delivered for review)
+# LoLeungKanPai: Development Plan (v8, Phase 4 delivered for review)
 
 ## Approved decisions
 | # | Decision |
@@ -48,8 +48,8 @@
 ## Phases
 1. **Foundation and Calendar** (approved)
 2. **Drink Entry Management and Backup/Restore** (approved): form, Take Photo / Choose from Photos, preview/replace/remove, create/edit/delete (with confirmation), change date, favourite, multiple per day, draft protection, orphan photo clean-up, storage-error handling, automatic earliest-photographed-drink cover (no manual cover), ZIP backup export and validated replace-all restore, backup reminder.
-3. **Tagging System** (delivered for review; see `PHASE3_PLAN.md`): libraries, searchable multi-select sheet, create-and-associate, case-insensitive uniqueness, rename, archive/restore, delete unused, drinks-per-tag. Tag filtering (D4) moves to Phase 4, where all the filters are built together.
-4. **Gallery and Collections**: 3-column gallery, year/month/favourite/tag filters (D4 logic), Collections hub, global search.
+3. **Tagging System** (approved; see `PHASE3_PLAN.md`): libraries, searchable multi-select sheet, create-and-associate, case-insensitive uniqueness, rename, archive/restore, delete unused, drinks-per-tag. Tag filtering (D4) moves to Phase 4, where all the filters are built together.
+4. **Gallery and Collections** (delivered for review; see `PHASE4_PLAN.md`): 3-column gallery, year/month/favourite/tag filters (D4 logic), Collections hub, global search.
 5. **Polish and Reliability**: merge restore, finer restore validation messages, storage meter and quota warnings (D6), loading/empty states, animation polish, offline verification, error boundary, update flow, iPhone Safari test pass.
 
 ## Changes after Phase 1 approval
@@ -66,5 +66,7 @@
 - v6: this plan and `PHASE2_PLAN.md` (now v5) record the 2b approval and the 2c delivery.
 - Phase 2 approved.
 - v7: **Phase 3 (tagging) delivered for review.** Base Spirits and Ingredients tags are chosen in the drink form (several per drink) and managed in Settings > Tag management. D3 is implemented as approved. No database migration (the schema from Phase 1 already had the tags store and tag indexes).
+- Phase 3 approved.
+- v8: **Phase 4 (gallery and collections) delivered for review.** Gallery with filters (D4), Collections (Base Spirits, Ingredients, Favourite Drinks, Recently Added) and search. No database migration; no new dependency.
 
-Phase 2 detail: see `PHASE2_PLAN.md`. Phase 3 detail: see `PHASE3_PLAN.md`.
+Phase 2 detail: see `PHASE2_PLAN.md`. Phase 3 detail: see `PHASE3_PLAN.md`. Phase 4 detail: see `PHASE4_PLAN.md`.
