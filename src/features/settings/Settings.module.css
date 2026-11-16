@@ -16,3 +16,7 @@
 .devBtn { padding: 13px 16px; text-align: left; border-radius: 14px; border: 1px dashed var(--chip-border); color: var(--text); }
 .status { margin-top: 10px; }
 .listGap { margin-top: 26px; }
+.value { color: var(--text); font-size: 14px; text-align: right; }
+.storageWarn { margin-top: 12px; padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(154, 45, 65, 0.45); background: var(--accent-soft); color: var(--text) !important; }
+.storageNote { margin-top: 10px; }
+.block .list { margin: 8px 0 0; }

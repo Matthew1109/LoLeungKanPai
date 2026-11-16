@@ -6,6 +6,7 @@ import { t } from '../../i18n';
 import { DEV_TOOLS_ENABLED, eraseEverything, seedDemoData } from '../../dev/devSeed';
 import BackupSection from '../backup/BackupSection';
 import RestoreSection from '../backup/RestoreSection';
+import StorageSection from './StorageSection';
 import screen from '../../components/Screen.module.css';
 import s from './Settings.module.css';
 
@@ -43,11 +44,9 @@ export default function Settings() {
             <ChevronRightIcon width={20} height={20} />
           </Link>
         </li>
-        <li className={s.row}>
-          <span>{t('settings.section.storage')}</span>
-          <span className={s.badge}>{t('settings.comingPhase', { phase: 5 })}</span>
-        </li>
       </ul>
+
+      <StorageSection />
 
       <section className={s.block}>
         <h3>{t('settings.section.privacy')}</h3>

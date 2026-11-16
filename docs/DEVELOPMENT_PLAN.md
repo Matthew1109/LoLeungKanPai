@@ -1,4 +1,4 @@
-# LoLeungKanPai: Development Plan (v8, Phase 4 delivered for review)
+# LoLeungKanPai: Development Plan (v9, Phase 5 delivered for review)
 
 ## Approved decisions
 | # | Decision |
@@ -49,8 +49,8 @@
 1. **Foundation and Calendar** (approved)
 2. **Drink Entry Management and Backup/Restore** (approved): form, Take Photo / Choose from Photos, preview/replace/remove, create/edit/delete (with confirmation), change date, favourite, multiple per day, draft protection, orphan photo clean-up, storage-error handling, automatic earliest-photographed-drink cover (no manual cover), ZIP backup export and validated replace-all restore, backup reminder.
 3. **Tagging System** (approved; see `PHASE3_PLAN.md`): libraries, searchable multi-select sheet, create-and-associate, case-insensitive uniqueness, rename, archive/restore, delete unused, drinks-per-tag. Tag filtering (D4) moves to Phase 4, where all the filters are built together.
-4. **Gallery and Collections** (delivered for review; see `PHASE4_PLAN.md`): 3-column gallery, year/month/favourite/tag filters (D4 logic), Collections hub, global search.
-5. **Polish and Reliability**: merge restore, finer restore validation messages, storage meter and quota warnings (D6), loading/empty states, animation polish, offline verification, error boundary, update flow, iPhone Safari test pass.
+4. **Gallery and Collections** (approved; see `PHASE4_PLAN.md`): 3-column gallery, year/month/favourite/tag filters (D4 logic), Collections hub, global search.
+5. **Polish and Reliability** (delivered for review; see `PHASE5_PLAN.md`; this is the final phase): merge restore, finer restore validation messages, storage meter and quota warnings (D6), loading/empty states, animation polish, offline verification, error boundary, update flow, iPhone Safari test pass.
 
 ## Changes after Phase 1 approval
 - Phase 1 approved after fixes: `@types/node` typecheck fix (fix1), five-item bottom navigation with Settings as the fifth tab (fix2), Settings back link removed (fix3). Typecheck, tests and build pass on the owner's machine.
@@ -69,4 +69,7 @@
 - Phase 3 approved.
 - v8: **Phase 4 (gallery and collections) delivered for review.** Gallery with filters (D4), Collections (Base Spirits, Ingredients, Favourite Drinks, Recently Added) and search. No database migration; no new dependency.
 
-Phase 2 detail: see `PHASE2_PLAN.md`. Phase 3 detail: see `PHASE3_PLAN.md`. Phase 4 detail: see `PHASE4_PLAN.md`.
+- Phase 4 approved.
+- v9: **Phase 5 (final polish and reliability) delivered for review.** Storage meter and warnings (D6), crash screen, offline and integrity review. No new features, no database migration.
+
+Phase 2 detail: see `PHASE2_PLAN.md`. Phase 3 detail: see `PHASE3_PLAN.md`. Phase 4 detail: see `PHASE4_PLAN.md`. Phase 5 detail: see `PHASE5_PLAN.md`.

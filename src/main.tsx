@@ -5,11 +5,14 @@ import '@fontsource-variable/playfair-display'; // bundled locally: no font CDN,
 import './styles/tokens.css';
 import './styles/global.css';
 import App from './App';
+import ErrorBoundary from './components/ErrorBoundary';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <HashRouter>
-      <App />
-    </HashRouter>
+    <ErrorBoundary>
+      <HashRouter>
+        <App />
+      </HashRouter>
+    </ErrorBoundary>
   </StrictMode>,
 );

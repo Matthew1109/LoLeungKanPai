@@ -2,7 +2,7 @@
 
 A private drinks and cocktail journal (PWA). Local-first: entries and photographs live in IndexedDB on the device. No backend, no accounts, no analytics.
 
-**Status: Phase 4 of 5 (gallery and collections) delivered for review.** Phases 1 (calendar), 2 (drink entries, backup and restore) and 3 (tagging) are approved. See `docs/DEVELOPMENT_PLAN.md` and `docs/PHASE4_PLAN.md`.
+**Status: Phase 5 of 5 (final polish and reliability) delivered for review.** Phases 1 to 4 are approved. See `docs/DEVELOPMENT_PLAN.md` and `docs/PHASE5_PLAN.md`.
 
 ## Setup (one time, on your MacBook / AI0011 workspace terminal)
 
@@ -29,6 +29,10 @@ Each drink can have several **Base spirit** tags and several **Ingredient** tags
 **Gallery** (tab *Gallery*): every drink that has a photo, newest first, three to a row. Tap a photo to open the drink. **Filters** narrows by year, month, favourites, base spirits and ingredients. Different filters combine with AND (for example 2026 AND favourites AND Gin). Inside base spirits, and inside ingredients, choose **Any** (a drink with at least one of the ticked tags) or **All** (a drink with every ticked tag). The filters live in the address, so Back from a drink returns to the same filtered view.
 
 **Collections** (tab *Collections*): **Search** at the top finds drinks by name, bar, notes or tag name (every word you type must match). Below it are four lists: **Base Spirits** and **Ingredients** (each tag with its drink count; tap one to see its drinks), **Favourite Drinks**, and **Recently Added** (the 30 drinks most recently recorded).
+
+## Storage
+
+Settings > **Storage** shows how much space the app uses, the size of your photographs, and whether the browser has promised not to clear your data. It warns when the device quota is 80% full and when photographs exceed 500 MB.
 
 ## Backup and restore
 
