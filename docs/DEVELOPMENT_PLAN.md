@@ -1,4 +1,4 @@
-# LoLeungKanPai: Development Plan (v6, Phase 2 in progress)
+# LoLeungKanPai: Development Plan (v7, Phase 3 delivered for review)
 
 ## Approved decisions
 | # | Decision |
@@ -47,8 +47,8 @@
 
 ## Phases
 1. **Foundation and Calendar** (approved)
-2. **Drink Entry Management and Backup/Restore** (in progress; 2a and 2b approved, 2c delivered for review): form, Take Photo / Choose from Photos, preview/replace/remove, create/edit/delete (with confirmation), change date, favourite, multiple per day, draft protection, orphan photo clean-up, storage-error handling, automatic earliest-photographed-drink cover (no manual cover), ZIP backup export and validated replace-all restore, backup reminder.
-3. **Tagging System**: libraries, searchable multi-select sheet, create-and-associate, case-insensitive uniqueness, rename, archive/restore, delete unused, drinks-per-tag, tag filtering.
+2. **Drink Entry Management and Backup/Restore** (approved): form, Take Photo / Choose from Photos, preview/replace/remove, create/edit/delete (with confirmation), change date, favourite, multiple per day, draft protection, orphan photo clean-up, storage-error handling, automatic earliest-photographed-drink cover (no manual cover), ZIP backup export and validated replace-all restore, backup reminder.
+3. **Tagging System** (delivered for review; see `PHASE3_PLAN.md`): libraries, searchable multi-select sheet, create-and-associate, case-insensitive uniqueness, rename, archive/restore, delete unused, drinks-per-tag. Tag filtering (D4) moves to Phase 4, where all the filters are built together.
 4. **Gallery and Collections**: 3-column gallery, year/month/favourite/tag filters (D4 logic), Collections hub, global search.
 5. **Polish and Reliability**: merge restore, finer restore validation messages, storage meter and quota warnings (D6), loading/empty states, animation polish, offline verification, error boundary, update flow, iPhone Safari test pass.
 
@@ -64,5 +64,7 @@
 - Phase 2 checkpoint **2c (backup export and restore) delivered for review.** E1 is implemented with my own ZIP writer/reader instead of fflate (the fallback named in v4; verified against Python's `zipfile`; no new dependency). Final Phase 2 sign-off follows your typecheck, tests, build and iPhone checks.
 - v5: this plan and `PHASE2_PLAN.md` (v4) aligned with the 2a/2b state; the restore design is a single section 9.
 - v6: this plan and `PHASE2_PLAN.md` (now v5) record the 2b approval and the 2c delivery.
+- Phase 2 approved.
+- v7: **Phase 3 (tagging) delivered for review.** Base Spirits and Ingredients tags are chosen in the drink form (several per drink) and managed in Settings > Tag management. D3 is implemented as approved. No database migration (the schema from Phase 1 already had the tags store and tag indexes).
 
-Phase 2 detail: see `PHASE2_PLAN.md`.
+Phase 2 detail: see `PHASE2_PLAN.md`. Phase 3 detail: see `PHASE3_PLAN.md`.

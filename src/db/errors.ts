@@ -26,6 +26,18 @@ export class StorageFullError extends Error {
   }
 }
 
+export type TagErrorCode = 'EMPTY' | 'TOO_LONG' | 'DUPLICATE' | 'IN_USE' | 'NOT_FOUND';
+
+/** A tag change broke a rule (blank or duplicate name, deleting a tag that drinks use, ...). Nothing was written. */
+export class TagError extends Error {
+  readonly code: TagErrorCode;
+  constructor(code: TagErrorCode) {
+    super(`Tag change refused: ${code}`);
+    this.name = 'TagError';
+    this.code = code;
+  }
+}
+
 /** True for the many shapes browsers use to say "out of space" (Safari/Chrome/Firefox, wrapped or not). */
 export function isQuotaError(err: unknown): boolean {
   if (typeof err !== 'object' || err === null) return false;
@@ -38,6 +50,11 @@ export function isQuotaError(err: unknown): boolean {
 
 /** Maps low-level write failures to the errors the UI knows how to explain. Unknown errors pass through unchanged. */
 export function toWriteError(err: unknown): unknown {
-  if (err instanceof EntryValidationError || err instanceof RestoreInProgressError || err instanceof StorageFullError) return err;
+  if (
+    err instanceof EntryValidationError || err instanceof RestoreInProgressError || err instanceof StorageFullError ||
+    err instanceof TagError
+  ) {
+    return err;
+  }
   return isQuotaError(err) ? new StorageFullError(err) : err;
 }

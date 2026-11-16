@@ -1,4 +1,29 @@
+# Dependencies and build output
 node_modules
 dist
+
+# macOS
 .DS_Store
+
+# Environment files and secrets (only .env.example is tracked)
+.env
+.env.*
+!.env.example
 *.local
+
+# Private data must never be committed: backup files and photographs
+# (the app icons in public/ are the only images that belong in the repository)
+*.zip
+*.jpg
+*.JPG
+*.jpeg
+*.JPEG
+*.heic
+*.HEIC
+*.heif
+*.HEIF
+*.png
+!public/*.png
+
+# Logs
+*.log

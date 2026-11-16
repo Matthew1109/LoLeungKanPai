@@ -2,7 +2,7 @@
 
 A private drinks and cocktail journal (PWA). Local-first: entries and photographs live in IndexedDB on the device. No backend, no accounts, no analytics.
 
-**Status: Phase 2 of 5, checkpoint 2c (backup export and restore), delivered for review.** Phase 1 (calendar) and checkpoints 2a and 2b are approved; final Phase 2 sign-off is pending. See `docs/DEVELOPMENT_PLAN.md` and `docs/PHASE2_PLAN.md`.
+**Status: Phase 3 of 5 (tagging) delivered for review.** Phases 1 (calendar) and 2 (drink entries, backup and restore) are approved. See `docs/DEVELOPMENT_PLAN.md` and `docs/PHASE3_PLAN.md`.
 
 ## Setup (one time, on your MacBook / AI0011 workspace terminal)
 
@@ -16,9 +16,13 @@ npm test            # unit tests (Vitest, fake-indexeddb)
 npm run dev         # dev server, prints a Local and a Network URL
 ```
 
-Open the Local URL on the Mac. To try it on your iPhone during development, put the phone on the same Wi-Fi and open the Network URL in Safari (the service worker is not active over plain HTTP; that is expected).
+Open the Local URL on the Mac. It ends in `/LoLeungKanPai/`, the same path as the deployed site. To try it on your iPhone during development, put the phone on the same Wi-Fi and open the Network URL in Safari (the service worker is not active over plain HTTP; that is expected).
 
 In Settings > Developer tools tap **Load demo data** to fill the calendar with sample drinks and generated photos. Developer tools exist only in `npm run dev` (or when `VITE_ENABLE_DEV_TOOLS=true`) and must be off for the real release.
+
+## Tags
+
+Each drink can have several **Base spirit** tags and several **Ingredient** tags. In the Add / Edit form tap **+ Add**, tick tags, search, or type a new name and tap *Create*. Settings > **Tag management** adds, renames, archives (and restores) and deletes tags; it also shows how many drinks use each one. An archived tag is no longer offered for new drinks but stays on the drinks that already have it. A tag can be deleted only while no drink uses it. Tags are included in backups.
 
 ## Backup and restore
 
@@ -27,28 +31,46 @@ Settings > *Back up your journal* > **Create backup**, then **Save backup** (cho
 ## Production build and preview
 
 ```bash
-npm run build
-npm run preview
+npm run build     # type-check, then build into dist/
+npm run preview   # serves dist/ at http://localhost:4173/LoLeungKanPai/
 ```
 
 ## Deploy to GitHub Pages
 
-1. Create a GitHub repository and push this folder to its `main` branch.
-2. Repository Settings > Pages > Source: **GitHub Actions**.
-3. The workflow in `.github/workflows/deploy.yml` builds with the correct base path and publishes. The site will be at `https://<user>.github.io/<repo>/`.
-4. On the iPhone: open that URL in Safari > Share > Add to Home Screen. Use the installed app, not the Safari tab (they have separate storage).
+The site is served from `https://<your-github-username>.github.io/LoLeungKanPai/`. The base path `/LoLeungKanPai/` is set once, in `vite.config.ts`.
+
+1. On GitHub create a **public** repository named `LoLeungKanPai`, empty (no README, `.gitignore` or licence). Pages is free only for public repositories. The repository holds source code only, never your journal.
+2. In that repository: Settings > Pages > Build and deployment > Source: **GitHub Actions**.
+3. Check what will be committed, then push from the project folder (`package-lock.json` must be included; it is created by `npm install`):
+
+   ```bash
+   git init
+   git add -A
+   git ls-files | grep -Ei '\.(zip|jpe?g|heic|heif|png)$|\.env'   # expect only public/*.png icons and .env.example
+   git commit -m "LoLeungKanPai"
+   git branch -M main
+   git remote add origin https://github.com/<your-github-username>/LoLeungKanPai.git
+   git push -u origin main
+   ```
+
+4. Every push to `main` runs `.github/workflows/deploy.yml`: `npm ci`, `npm test`, `npm run build`, then publishes `dist/`. Follow it under the repository's Actions tab. When it is green, the URL is shown on the *deploy* job.
+5. iPhone: open the URL in Safari > Share > Add to Home Screen. Use the installed app, not the Safari tab (they have separate storage). Make a first backup in Settings once you have a few entries.
+
+Later pushes publish a new version. The installed app shows its "update ready" prompt; GitHub Pages can take a few minutes to serve new files. Do not rename the repository or your GitHub username without making a backup first: the Home Screen icon would point at the old address, and a re-added icon starts empty.
 
 ## Structure
 
 ```
 src/db/          IndexedDB schema, migrations, repositories (UI never touches IndexedDB directly):
                  entryRepo (validated, transactional saves), tx (write transaction + abort), maintenance
-                 (orphan photo sweep), locks (maintenance lock), backupReminder, draftRepo, metaRecords
+                 (orphan photo sweep), locks (maintenance lock), backupReminder, draftRepo, metaRecords,
+                 tagRepo (tag create/rename/archive/delete rules, counts)
 src/backup/      backup file format, own ZIP writer/reader, export, restore, share/download hand-over
 src/utils/       dates, ids, entry validation, calendar cover rule
 src/hooks/       data hooks (month data, day entries, one entry, object-URL management, toast)
 src/features/    calendar, journal (day list + cards), entry (detail), add (entry form, photo picker,
-                 draft/route logic; also used for editing), settings, backup (Settings sections, reminder banner)
+                 draft/route logic; also used for editing), settings, backup (Settings sections, reminder banner),
+                 tags (tag picker in the form, Tag management screen)
 src/components/  navigation, empty state, install/update prompts, icons, confirm dialog, toast
 src/i18n/        message catalogue (English now; Traditional Chinese slot ready)
 src/services/    image processing (1600 px JPEG q0.82 + 480 px thumbnail; thumbnail rebuild on restore)

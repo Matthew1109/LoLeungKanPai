@@ -45,6 +45,32 @@ export async function runWriteTx<T>(work: (tx: WriteTx) => Promise<T>): Promise<
 }
 
 /**
+ * Tag management (create, rename, archive, delete) uses one transaction over the tags, the entries (to see which
+ * tags drinks use) and the meta store (the restore guard), so a rule check and its write can never be split.
+ */
+const TAG_STORES = ['tags', 'entries', 'meta'] as const;
+
+function openTagTx(db: IDBPDatabase<LkpDB>) {
+  return db.transaction([...TAG_STORES], 'readwrite');
+}
+
+export type TagTx = ReturnType<typeof openTagTx>;
+
+/** Same contract as runWriteTx: resolves once COMMITTED, aborts if `work` throws, await only IndexedDB requests. */
+export async function runTagTx<T>(work: (tx: TagTx) => Promise<T>): Promise<T> {
+  const db = await getDb();
+  const tx = openTagTx(db);
+  try {
+    const value = await work(tx);
+    await tx.done;
+    return value;
+  } catch (err) {
+    abortQuietly(tx);
+    throw toWriteError(err);
+  }
+}
+
+/**
  * The restore commit's stores. `photos` and `thumbs` are in the transaction only so the commit can VERIFY the staged
  * photos inside it (read-only use: the commit never writes to them). Same abort-on-throw rule as runWriteTx.
  */

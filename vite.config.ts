@@ -2,8 +2,10 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 
-// GitHub Pages serves project sites from /<repo-name>/. The deploy workflow sets VITE_BASE.
-const base = process.env.VITE_BASE ?? '/';
+// GitHub Pages serves this project site from https://<user>.github.io/LoLeungKanPai/.
+// This is the single source of truth: the dev server, `npm run preview` and the deployed build all use it.
+// VITE_BASE can override it (for example VITE_BASE=/ for a copy hosted at a domain root).
+const base = process.env.VITE_BASE ?? '/LoLeungKanPai/';
 
 // Privacy guard: in production builds the browser itself refuses any request that is not to our own origin.
 // (Not applied in dev, where Vite injects inline scripts.)
@@ -40,6 +42,8 @@ export default defineConfig({
         name: 'LoLeungKanPai',
         short_name: 'LoLeungKanPai',
         description: 'A private drinks and cocktail journal. Everything stays on your device.',
+        scope: base,
+        start_url: base,
         display: 'standalone',
         orientation: 'portrait',
         background_color: '#0d0d0f',

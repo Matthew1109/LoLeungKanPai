@@ -11,8 +11,9 @@ import { t } from '../../i18n';
 import type { MessageKey } from '../../i18n/locales/en';
 import { PhotoProcessingError, processPhoto } from '../../services/imageProcessing';
 import { newId } from '../../utils/id';
+import TagField from '../tags/TagField';
 import { makeDraft } from './draftModel';
-import { buildEntryInput, sameFields } from './entryFormModel';
+import { buildEntryInput, sameFields, sameTagSelection, tagSelectionFromEntry, type TagSelection } from './entryFormModel';
 import { CATEGORY_LABEL_KEYS, fieldErrors, writeErrorKey, type FieldName } from './formErrors';
 import PhotoPicker from './PhotoPicker';
 import { previewUrlFor, stateAfterRemove, toPhotoChange, type PhotoState } from './photoState';
@@ -41,7 +42,8 @@ const MAX_DATE = '2100-12-31';
 const warnDraft = (err: unknown) => console.warn('Could not update the form draft', err);
 
 /**
- * The Add / Edit form. Text fields are drafted to IndexedDB while the user types (decision E5); the photo is not.
+ * The Add / Edit form. Text fields are drafted to IndexedDB while the user types (decision E5); the photo and the
+ * tags are not.
  * Saving goes through saveEntry only, in one transaction with the photo change. Nothing here touches IndexedDB
  * for entries directly.
  */
@@ -53,6 +55,7 @@ export default function EntryForm({
   const rootRef = useRef<HTMLDivElement>(null);
 
   const [fields, setFields] = useState<EntryDraftFields>(initialFields);
+  const [tagSel, setTagSel] = useState<TagSelection>(() => tagSelectionFromEntry(existing));
   const [photo, setPhoto] = useState<PhotoState>({ kind: 'keep' });
   const [photoBusy, setPhotoBusy] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
@@ -65,6 +68,8 @@ export default function EntryForm({
   // Mutable mirrors, so handlers that outlive a render (timers, page events, async work) see current values.
   const fieldsRef = useRef(fields);
   fieldsRef.current = fields;
+  const tagSelRef = useRef(tagSel);
+  tagSelRef.current = tagSel;
   const baselineRef = useRef(baselineFields);
   const aliveRef = useRef(false);
   const savingRef = useRef(false);
@@ -184,7 +189,7 @@ export default function EntryForm({
 
   async function save() {
     if (savingRef.current || photoBusyRef.current) return;
-    const built = buildEntryInput(fieldsRef.current, { id: entryId, existing, now: new Date() });
+    const built = buildEntryInput(fieldsRef.current, { id: entryId, existing, now: new Date(), tags: tagSelRef.current });
     if (!built.ok) {
       showFieldErrors(fieldErrors(built.problems));
       return;
@@ -221,7 +226,8 @@ export default function EntryForm({
     onLeave();
   }
 
-  const dirty = !sameFields(fields, baselineFields) || photo.kind !== 'keep';
+  const dirty =
+    !sameFields(fields, baselineFields) || photo.kind !== 'keep' || !sameTagSelection(tagSel, tagSelectionFromEntry(existing));
 
   function cancel() {
     if (savingRef.current) return;
@@ -353,6 +359,21 @@ export default function EntryForm({
             onChange={(event) => setField('barName', event.target.value)}
           />
         </div>
+
+        <TagField
+          category="BASE_SPIRIT"
+          label={t('tags.section.spirits')}
+          selectedIds={tagSel.baseSpiritTagIds}
+          disabled={saving}
+          onChange={(ids) => setTagSel((prev) => ({ ...prev, baseSpiritTagIds: ids }))}
+        />
+        <TagField
+          category="INGREDIENT"
+          label={t('tags.section.ingredients')}
+          selectedIds={tagSel.ingredientTagIds}
+          disabled={saving}
+          onChange={(ids) => setTagSel((prev) => ({ ...prev, ingredientTagIds: ids }))}
+        />
 
         <div className={s.row2}>
           <div className={s.field} data-invalid={abvError ? 'true' : undefined}>

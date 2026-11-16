@@ -8,6 +8,7 @@ import EmptyState from './components/EmptyState';
 import CalendarScreen from './features/calendar/CalendarScreen';
 import DailyJournal from './features/journal/DailyJournal';
 import Settings from './features/settings/Settings';
+import ManageTags from './features/tags/ManageTags';
 import AddEntryScreen from './features/add/AddEntryScreen';
 import EditEntryScreen from './features/add/EditEntryScreen';
 import EntryDetail from './features/entry/EntryDetail';
@@ -53,6 +54,7 @@ export default function App() {
         <Route path="/entry/:id/edit" element={<EditEntryScreen />} />
         <Route path="/collections" element={<PlaceholderScreen title={t('placeholder.collections.title')} body={t('placeholder.collections.body')} />} />
         <Route path="/settings" element={<Settings />} />
+        <Route path="/settings/tags" element={<ManageTags />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <BottomNav />

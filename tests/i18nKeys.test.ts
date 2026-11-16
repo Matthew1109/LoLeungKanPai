@@ -12,7 +12,7 @@ const SRC = join(process.cwd(), 'src');
 const CATALOGUE_FILE = join('i18n', 'locales', 'en.ts');
 const PREFIXES = [
   'app', 'nav', 'common', 'calendar', 'journal', 'favourite', 'form', 'category', 'draft', 'discard', 'entry',
-  'delete', 'placeholder', 'settings', 'install', 'update', 'error', 'backup', 'restore', 'reminder',
+  'delete', 'placeholder', 'settings', 'install', 'update', 'error', 'backup', 'restore', 'reminder', 'tags',
 ];
 const KEY_LITERAL = new RegExp(`'((?:${PREFIXES.join('|')})\\.[A-Za-z0-9_.]+)'`, 'g');
 

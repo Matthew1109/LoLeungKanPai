@@ -1,5 +1,7 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { APP_VERSION_LABEL } from '../../appVersion';
+import { ChevronRightIcon } from '../../components/icons';
 import { t } from '../../i18n';
 import { DEV_TOOLS_ENABLED, eraseEverything, seedDemoData } from '../../dev/devSeed';
 import BackupSection from '../backup/BackupSection';
@@ -22,11 +24,6 @@ export default function Settings() {
     }
   };
 
-  const rows: [string, number][] = [
-    [t('settings.section.tags'), 3],
-    [t('settings.section.storage'), 5],
-  ];
-
   return (
     <div className={screen.screen}>
       <h1 className={screen.pageTitle}>{t('settings.title')}</h1>
@@ -40,12 +37,16 @@ export default function Settings() {
       <RestoreSection />
 
       <ul className={`${s.list} ${s.listGap}`}>
-        {rows.map(([label, phase]) => (
-          <li key={label} className={s.row}>
-            <span>{label}</span>
-            <span className={s.badge}>{t('settings.comingPhase', { phase })}</span>
-          </li>
-        ))}
+        <li className={`${s.row} ${s.rowLinkItem}`}>
+          <Link to="/settings/tags" className={s.rowLink}>
+            <span>{t('settings.section.tags')}</span>
+            <ChevronRightIcon width={20} height={20} />
+          </Link>
+        </li>
+        <li className={s.row}>
+          <span>{t('settings.section.storage')}</span>
+          <span className={s.badge}>{t('settings.comingPhase', { phase: 5 })}</span>
+        </li>
       </ul>
 
       <section className={s.block}>
