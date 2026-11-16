@@ -1,4 +1,4 @@
-.page { min-height: 100dvh; padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + 36px); }
+.page { padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + 36px); }
 
 .header {
   position: sticky;
