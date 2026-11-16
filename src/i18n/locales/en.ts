@@ -107,7 +107,7 @@ const en = {
   'settings.title': 'Settings',
   'settings.backupWarning.title': 'Your journal lives only on this iPhone',
   'settings.backupWarning.body':
-    'There is no cloud copy. Deleting the app, clearing website data, or the system freeing up space can erase every entry and photograph. Regular backups are the only safety net. Create a backup below and keep the file somewhere other than this iPhone.',
+    'There is no cloud copy. Deleting the app, clearing website data, or the system freeing up space can erase every entry and photograph. Regular backups are highly recommended. Create a backup below and keep the file somewhere other than this iPhone.',
   'settings.section.tags': 'Tag management',
   'settings.section.storage': 'Storage',
   'settings.section.about': 'About',
@@ -127,8 +127,8 @@ const en = {
   'crash.body': 'The screen stopped working. Your journal is stored separately and was not changed. Reload the app to continue.',
   'crash.reload': 'Reload',
   'settings.privacy.body':
-    'No account. No analytics. No tracking. Your entries and photographs are never uploaded; the hosting site only serves the app itself.',
-  'settings.about.body': 'LoLeungKanPai, version {version}. A private drinks and cocktail journal.',
+    'Your entries and photographs are stored locally in your phone and never uploaded.',
+  'settings.about.body': 'LoLeungKanPai, version {version}. A drinks and cocktail journal.',
   'settings.dev.title': 'Developer tools',
   'settings.dev.seed': 'Load demo data',
   'settings.dev.clear': 'Erase all data on this device',
